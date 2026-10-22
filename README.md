@@ -7,6 +7,9 @@ Graphiti diagrams such as BPMN2 models, with the palette and the mouse if you
 want to watch. The plug-in is the engine; it runs inside Eclipse and serves
 everything on one local port, protected by a token.
 
+[docs/tutorial.md](docs/tutorial.md) walks through the installation, the MCP
+menu, the command line and the editing of a BPMN diagram, with screenshots.
+
 It comes in four forms, all backed by the same tools:
 
 | Form     | For whom                                   | Reference                          |
