@@ -1,6 +1,7 @@
 package io.github.alfayohannis.eclipse.mcp.client.cli;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -80,6 +81,24 @@ class MainTest {
     void notRunningExitsWithThree() throws IOException {
         plugin.close();
         assertEquals(Main.NOT_RUNNING, run("projects"));
+    }
+
+    /** diagram prints the shapes and connections and asks the plug-in to leave the palette out. */
+    @Test
+    void diagramPrintsShapesWithoutPalette() {
+        assertEquals(0, run("diagram"));
+        assertTrue(out().contains("  Task_1  Task  \"Check order\"  at 100,80 size 110x50"), out());
+        assertTrue(out().contains("  SequenceFlow_1  SequenceFlow  StartEvent_1 -> Task_1"), out());
+        assertFalse(out().contains("palette:"), out());
+        assertFalse(plugin.lastArguments().get("palette").getAsBoolean());
+    }
+
+    /** diagram --palette also prints the palette tools that diagram-create and diagram-connect take. */
+    @Test
+    void diagramPaletteFlagPrintsPaletteTools() {
+        assertEquals(0, run("diagram", "--palette"));
+        assertTrue(out().contains("palette:"), out());
+        assertTrue(out().contains("  Task  shape  (Tasks)"), out());
     }
 
     /** help lists the commands and exits with 0. */

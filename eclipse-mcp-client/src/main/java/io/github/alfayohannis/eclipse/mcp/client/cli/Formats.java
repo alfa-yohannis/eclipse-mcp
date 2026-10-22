@@ -67,7 +67,10 @@ final class Formats {
         }
     }
 
-    /** The diagram's shapes and connections, one per line. */
+    /**
+     * The diagram's shapes and connections, one per line, then the palette tools when the result holds
+     * them, which it does for {@code diagram --palette}.
+     */
     static void diagram(JsonObject structured, Output output) {
         output.line(text(structured, "editor") + "  " + text(structured, "file")
                 + (structured.get("dirty").getAsBoolean() ? "  (unsaved changes)" : ""));
@@ -81,6 +84,21 @@ final class Formats {
             JsonObject connection = element.getAsJsonObject();
             output.line("  " + text(connection, "id") + "  " + text(connection, "type") + "  " + text(connection, "source")
                     + " -> " + text(connection, "target"));
+        }
+        if (structured.has("palette")) {
+            printPalette(structured.getAsJsonArray("palette"), output);
+        }
+    }
+
+    /**
+     * A heading, then one line per palette tool: the label that diagram-create and diagram-connect take,
+     * whether the tool makes a shape or a connection, and the palette drawer that holds it.
+     */
+    private static void printPalette(JsonArray palette, Output output) {
+        output.line("palette:");
+        for (JsonElement element : palette) {
+            JsonObject tool = element.getAsJsonObject();
+            output.line("  " + text(tool, "label") + "  " + text(tool, "kind") + "  (" + text(tool, "drawer") + ")");
         }
     }
 

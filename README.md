@@ -263,7 +263,7 @@ comment on every class and method that says what it does and why.
 ./eclipse-mcp test
 ```
 
-28 JUnit 5 tests of the client run without Eclipse, against a fake plug-in
+30 JUnit 5 tests of the client run without Eclipse, against a fake plug-in
 built on `com.sun.net.httpserver.HttpServer`: discovery, the typed methods,
 error handling, the CLI's output and exit codes, and the stdio server with and
 without Eclipse. The plug-in itself was tested against Eclipse 2022-06 with the

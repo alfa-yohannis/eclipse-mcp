@@ -150,6 +150,8 @@ public final class FakePlugin implements AutoCloseable {
             return result("Refreshed /", null, false);
         case "screenshot":
             return screenshotResult();
+        case "diagram_info":
+            return diagramResult(arguments);
         case "fail_tool":
             return result("Something went wrong", null, true);
         default:
@@ -181,6 +183,65 @@ public final class FakePlugin implements AutoCloseable {
         screenshot.getAsJsonArray("content").add(image);
         screenshot.getAsJsonObject("structuredContent").addProperty("captured", "the shell");
         return screenshot;
+    }
+
+    /**
+     * An open diagram with one task and one sequence flow. Like the plug-in, it adds the palette unless
+     * the call sets palette to false.
+     */
+    private static JsonObject diagramResult(JsonObject arguments) {
+        JsonObject structured = new JsonObject();
+        structured.addProperty("editor", "order");
+        structured.addProperty("file", "/demo/order.bpmn");
+        structured.addProperty("dirty", false);
+        structured.add("shapes", single(task()));
+        structured.add("connections", single(sequenceFlow()));
+        boolean withPalette = !arguments.has("palette") || arguments.get("palette").getAsBoolean();
+        if (withPalette) {
+            structured.add("palette", single(taskTool()));
+        }
+        return result(structured.toString(), structured, false);
+    }
+
+    /** The task Task_1 "Check order" at 100,80, 110 by 50. */
+    private static JsonObject task() {
+        JsonObject bounds = new JsonObject();
+        bounds.addProperty("x", 100);
+        bounds.addProperty("y", 80);
+        bounds.addProperty("width", 110);
+        bounds.addProperty("height", 50);
+        JsonObject task = new JsonObject();
+        task.addProperty("id", "Task_1");
+        task.addProperty("type", "Task");
+        task.addProperty("name", "Check order");
+        task.add("bounds", bounds);
+        return task;
+    }
+
+    /** The sequence flow SequenceFlow_1 from StartEvent_1 to Task_1. */
+    private static JsonObject sequenceFlow() {
+        JsonObject flow = new JsonObject();
+        flow.addProperty("id", "SequenceFlow_1");
+        flow.addProperty("type", "SequenceFlow");
+        flow.addProperty("source", "StartEvent_1");
+        flow.addProperty("target", "Task_1");
+        return flow;
+    }
+
+    /** The palette tool Task in the drawer Tasks. */
+    private static JsonObject taskTool() {
+        JsonObject tool = new JsonObject();
+        tool.addProperty("label", "Task");
+        tool.addProperty("drawer", "Tasks");
+        tool.addProperty("kind", "shape");
+        return tool;
+    }
+
+    /** A JSON array holding one object. */
+    private static JsonArray single(JsonObject element) {
+        JsonArray array = new JsonArray();
+        array.add(element);
+        return array;
     }
 
     /** An empty problem list with counts. */
