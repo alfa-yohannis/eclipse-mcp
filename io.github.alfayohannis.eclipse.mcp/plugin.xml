@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <!-- Other plug-ins add tools through providers -->
+   <extension-point id="tools" name="MCP Tools" schema="schema/tools.exsd"/>
+
+   <!-- Start the MCP server once the workbench is up, unless the preference turns that off -->
+   <extension point="org.eclipse.ui.startup">
+      <startup class="io.github.alfayohannis.eclipse.mcp.internal.McpStartup"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.commands">
+      <category id="io.github.alfayohannis.eclipse.mcp.category" name="MCP Server"/>
+      <command id="io.github.alfayohannis.eclipse.mcp.start" name="Start MCP Server"
+            categoryId="io.github.alfayohannis.eclipse.mcp.category"
+            defaultHandler="io.github.alfayohannis.eclipse.mcp.internal.StartServerHandler"/>
+      <command id="io.github.alfayohannis.eclipse.mcp.stop" name="Stop MCP Server"
+            categoryId="io.github.alfayohannis.eclipse.mcp.category"
+            defaultHandler="io.github.alfayohannis.eclipse.mcp.internal.StopServerHandler"/>
+      <command id="io.github.alfayohannis.eclipse.mcp.restart" name="Restart MCP Server"
+            categoryId="io.github.alfayohannis.eclipse.mcp.category"
+            defaultHandler="io.github.alfayohannis.eclipse.mcp.internal.RestartServerHandler"/>
+      <command id="io.github.alfayohannis.eclipse.mcp.status" name="MCP Server Status"
+            categoryId="io.github.alfayohannis.eclipse.mcp.category"
+            defaultHandler="io.github.alfayohannis.eclipse.mcp.internal.ServerStatusHandler"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu id="io.github.alfayohannis.eclipse.mcp.menu" label="MCP">
+            <command commandId="io.github.alfayohannis.eclipse.mcp.start" label="Start Server"/>
+            <command commandId="io.github.alfayohannis.eclipse.mcp.stop" label="Stop Server"/>
+            <command commandId="io.github.alfayohannis.eclipse.mcp.restart" label="Restart Server"/>
+            <separator name="status" visible="true"/>
+            <command commandId="io.github.alfayohannis.eclipse.mcp.status" label="Server Status..."/>
+         </menu>
+      </menuContribution>
+   </extension>
+
+   <extension point="org.eclipse.ui.preferencePages">
+      <page id="io.github.alfayohannis.eclipse.mcp.preferences" name="MCP Server"
+            class="io.github.alfayohannis.eclipse.mcp.internal.McpPreferencePage"/>
+   </extension>
+
+   <extension point="org.eclipse.core.runtime.preferences">
+      <initializer class="io.github.alfayohannis.eclipse.mcp.internal.McpPreferenceInitializer"/>
+   </extension>
+</plugin>

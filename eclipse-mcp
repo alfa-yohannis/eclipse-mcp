@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Entry point of the Eclipse MCP client. The first run builds the client jar.
+#
+#   ./eclipse-mcp status                    # server, Eclipse version, workspace, dialogs
+#   ./eclipse-mcp projects                  # workspace projects with problem counts
+#   ./eclipse-mcp problems --severity error # problem markers
+#   ./eclipse-mcp run org.eclipse.ui.file.saveAll
+#   ./eclipse-mcp menu "File > New"         # what a menu offers
+#   ./eclipse-mcp screenshot window.png --target window
+#   ./eclipse-mcp diagram                   # the open diagram's elements
+#   ./eclipse-mcp call <tool> key=value     # any tool
+#   ./eclipse-mcp mcp                       # MCP server over stdio, for AI assistants
+#   ./eclipse-mcp help                      # every command
+#   ./eclipse-mcp test                      # client unit tests (needs Maven)
+#   ./eclipse-mcp build-plugin <eclipse-dir> [--install]   # the Eclipse plug-ins
+#
+# ECLIPSE_MCP_JAVA picks the java binary (default: java on PATH).
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLIENT="$ROOT/eclipse-mcp-client"
+JAVA="${ECLIPSE_MCP_JAVA:-java}"
+CONFIG="${ECLIPSE_MCP_CONFIG:-$HOME/.config/eclipse-mcp}"
+
+usage() {
+	sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'
+	exit 2
+}
+
+# The newest runnable client jar, or nothing.
+client_jar() {
+	ls -t "$CLIENT"/target/eclipse-mcp-client-*-all.jar 2>/dev/null | head -1
+}
+
+# Whether the jar is missing or older than the sources or the pom.
+needs_build() {
+	local jar
+	jar="$(client_jar)"
+	[[ -z "$jar" ]] && return 0
+	[[ -n "$(find "$CLIENT/pom.xml" "$CLIENT/src/main" -newer "$jar" -print -quit)" ]]
+}
+
+# Builds with Maven, or with plain javac and a Gson jar when Maven is missing.
+# All output goes to stderr: "mcp" speaks JSON-RPC on stdout.
+build_client() {
+	echo "Building the eclipse-mcp client" >&2
+	if command -v mvn >/dev/null; then
+		(cd "$CLIENT" && mvn -q -DskipTests package) >&2
+	else
+		build_without_maven >&2
+	fi
+}
+
+# javac build: Gson from the Maven cache, an Eclipse plug-in or Maven Central, unpacked into the jar.
+build_without_maven() {
+	local work="$CLIENT/target/plain" gson
+	rm -rf "$work" && mkdir -p "$work/classes" "$work/lib"
+	gson="$(ls ~/.m2/repository/com/google/code/gson/gson/*/gson-*.jar 2>/dev/null | grep -v sources | tail -1 || true)"
+	if [[ -z "$gson" ]]; then
+		gson="$work/lib/gson.jar"
+		curl -fsSL -o "$gson" https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+	fi
+	find "$CLIENT/src/main/java" -name '*.java' >"$work/sources.txt"
+	javac --release 11 -encoding UTF-8 -d "$work/classes" -cp "$gson" @"$work/sources.txt"
+	(cd "$work/classes" && jar xf "$gson" com && rm -rf META-INF)
+	jar --create --file "$CLIENT/target/eclipse-mcp-client-plain-all.jar" \
+		--main-class io.github.alfayohannis.eclipse.mcp.client.cli.Main -C "$work/classes" .
+}
+
+# Tells the plug-in's status dialog where this launcher is, for its ready-to-paste setup.
+record_launcher() {
+	mkdir -p "$CONFIG" 2>/dev/null || return 0
+	[[ "$(cat "$CONFIG/launcher" 2>/dev/null)" == "$ROOT/eclipse-mcp" ]] || echo "$ROOT/eclipse-mcp" >"$CONFIG/launcher"
+}
+
+COMMAND="${1:-}"
+[[ -n "$COMMAND" ]] || usage
+
+case "$COMMAND" in
+-h | --help) usage ;;
+test)
+	shift
+	cd "$CLIENT" && exec mvn -q test "$@"
+	;;
+build-plugin)
+	shift
+	exec bash "$ROOT/build.sh" "$@"
+	;;
+*)
+	record_launcher
+	needs_build && build_client
+	exec "$JAVA" -jar "$(client_jar)" "$@"
+	;;
+esac

@@ -1,0 +1,25 @@
+{
+  "_notes": [
+    "MCP server configuration for clients other than Claude Code (Cursor, Zed, Antigravity and others).",
+    "Copy one of the two entries into your client's mcpServers block.",
+    "",
+    "eclipse: stdio through the launcher, which finds the running Eclipse and reads the token file",
+    "itself, so no token goes into this file. Replace the path with your clone's launcher.",
+    "",
+    "eclipse-http: plain HTTP to the plug-in. Paste the token from ~/.config/eclipse-mcp/token,",
+    "or copy the whole entry from Eclipse: MCP > Server Status... > Copy Setup."
+  ],
+  "mcpServers": {
+    "eclipse": {
+      "command": "/path/to/eclipse-mcp/eclipse-mcp",
+      "args": ["mcp"]
+    },
+    "eclipse-http": {
+      "type": "http",
+      "url": "http://127.0.0.1:8765/mcp",
+      "headers": {
+        "Authorization": "Bearer <token from ~/.config/eclipse-mcp/token>"
+      }
+    }
+  }
+}

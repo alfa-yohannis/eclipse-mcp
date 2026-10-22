@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <!-- Diagram tools for any Graphiti editor, such as the BPMN2 Modeler -->
+   <extension point="io.github.alfayohannis.eclipse.mcp.tools">
+      <provider class="io.github.alfayohannis.eclipse.mcp.graphiti.GraphitiToolProvider"/>
+   </extension>
+</plugin>

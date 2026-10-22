@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<schema targetNamespace="io.github.alfayohannis.eclipse.mcp" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="io.github.alfayohannis.eclipse.mcp" id="tools" name="MCP Tools"/>
+      </appInfo>
+      <documentation>
+         Adds tools to the MCP server and REST API of this Eclipse instance. Each provider returns a list of
+         io.github.alfayohannis.eclipse.mcp.api.Tool objects; the registry asks it once, the first time a client
+         lists or calls tools. A tool whose name already exists is ignored.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="provider" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string">
+            <annotation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="provider">
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A class with a public no-argument constructor that implements
+                  io.github.alfayohannis.eclipse.mcp.api.ToolProvider.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":io.github.alfayohannis.eclipse.mcp.api.ToolProvider"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         &lt;pre&gt;
+&lt;extension point="io.github.alfayohannis.eclipse.mcp.tools"&gt;
+   &lt;provider class="com.example.MyTools"/&gt;
+&lt;/extension&gt;
+         &lt;/pre&gt;
+      </documentation>
+   </annotation>
+</schema>

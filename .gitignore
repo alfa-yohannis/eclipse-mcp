@@ -22,3 +22,10 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Build output: plug-in jars from build.sh, Eclipse/PDE output folders, the client's Maven target
+/build/
+bin/
+target/
+# Files that FUSE file systems keep while a deleted file is still open
+.fuse_hidden*
